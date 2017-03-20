@@ -1,4 +1,9 @@
-# ht02nim nim c --cpu:mipsel --os:linux -d:uClibc radioApi.nim
+# NOTE 1: I am using docker to cross-compile for OpenWrt, eg like this:
+# docker run --rm -v ${PWD}:/src davidsblog/openwrt-build-ht-tm02-nim /bin/sh -c "cd /src;nim c --cpu:mipsel --os:linux -d:uClibc radioApi.nim"
+# (or use a script, eg: ht02nim nim c --cpu:mipsel --os:linux -d:uClibc radioApi.nim)
+
+# NOTE 2: I also pack the resulting binary, to save storage, like this:
+# upx radioApi --ultra-brute
 
 import asynchttpserver, asyncdispatch, json, tables
 import os, strutils, posix, strtabs
