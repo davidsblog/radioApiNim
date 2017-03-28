@@ -7,6 +7,14 @@ It's a port of the version I wrote in C some time ago (with some improvements).
 I am using this on OpenWrt and running it on a tiny embedded router (like the HooToo HT-TM02) with a USB sound adapter.
 I simply plug it into a speaker and then control it from my nearest web browser.
 
+## Building
+At the moment I'm just using a **Makefile** to build the code.
+
+On a local Linux box you can just use `make` to build the executable.
+
+To cross-compile for the HooToo HT-TM02 running OpenWrt, you can use  `make ht02` ... but *note* this uses a docker image
+as a cross compile toolchain which means a big docker image will be downloaded the first time.
+
 ## Dependencies
 
 Before running on OpenWrt, some packages are needed.
