@@ -29,6 +29,15 @@ const madplayCmd = @["/usr/bin/madplay", "-q", "-"]
 const mixer = @["/usr/bin/amixer", "-q", "sset"]
 const success = "OK"
 
+# different mixer control and volume gradient for these types of CPU
+# means I can do something slightly different on the hootoo
+when defined(mips) or defined(mipsel):
+  const mixercontrol = "PCM"
+  const volarray = @[ 0, 5,8,11,14,17, 20,23,26,29,32, 35,40,45,50,55, 60,70,80,90,100 ]
+else:
+  const mixercontrol = "Master"
+  const volarray = @[ 0, 5,10,15,20,25, 30,35,40,45,50, 55,60,65,70,75, 80,85,90,95,100 ]
+
 var pids = (0,0)
 var volume = 4
 var idx= "-1"
@@ -57,8 +66,7 @@ proc mixervol() =
   if volume > 20: volume = 20
   elif volume < 0: volume = 0
   if fork() == 0:
-    let cmd = mixer & "PCM" & $(volume * 5)
-    #let cmd = mixer & "Master" & $(volume * 5)
+    let cmd = mixer & mixercontrol & $volarray[volume]
     doAssert(execv(cmd[0], allocCStringArray(cmd)) != -1)
 
 proc volinc(fields: JsonNode): string =

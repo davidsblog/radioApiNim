@@ -2,20 +2,24 @@
 # Based on the OpenWrt example script
 # Copyright (C) 2007 OpenWrt.org
 
+# copy to: /etc/init.d/radio
+# then do: /etc/init.d/radio enable
+
 START=99
 STOP=99
 
 start() {
-        echo Starting Radio API...
-	sleep 5
-	cd /usr/bin/radioApi
-	/usr/bin/radioApi/radioApi
-	echo Radio API started!
         # commands to launch application
+	sleep 5
+	echo Starting Radio API...
+	cd /usr/bin/radio
+	/usr/bin/radio/radioApi
+	echo Radio API started!
 }
 
 stop() {
-        echo stop
-	killall radioApi
         # commands to kill application
+        echo Stopping Radio API...
+	killall radioApi
+	echo Radio API stopped!
 }
