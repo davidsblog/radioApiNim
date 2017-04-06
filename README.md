@@ -20,7 +20,8 @@ large docker image as a cross compile toolchain which means a big download the f
 When running the code, you must be in a directory *containing* the `/public` subdirectory. I normally have
 this structure:
 
-```  /usr/bin/radio
+```
+  /usr/bin/radio
   |
   +-- radioApi
   |
