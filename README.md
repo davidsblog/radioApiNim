@@ -1,6 +1,7 @@
 # radioApi (Nim)
 A web API and front-end for radio streaming with madplay on Linux. The code is written in Nim.
-It's a port of the version I wrote in C some time ago (with some improvements).
+It's a port of the version I wrote [in C some time ago](https://github.com/davidsblog/radioApi)
+- but with some improvements.
 
 # VERY MUCH WORK IN PROGRESS :-)
 
