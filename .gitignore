@@ -2,6 +2,7 @@ radioApi
 externals
 execpiped
 
+certs/
 nimcache/
 radio/
 radio/public/

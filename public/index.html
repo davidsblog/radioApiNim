@@ -21,6 +21,8 @@
                     <a href="index.html" class="navbar-brand">
                         <span class="glyphicon glyphicon-headphones text-info" aria-hidden="true"></span>
                         Internet Radio
+                        <span id="heartbeat1" class="glyphicon glyphicon-heart text-danger" aria-hidden="true"></span>
+                        <span id="heartbeat2" style="display:none" class="glyphicon glyphicon-heart-empty text-danger" aria-hidden="true"></span>
                     </a>
 
                 </div>
@@ -55,6 +57,7 @@
                         <label for="stationlist">Predefined Stations</label>
                         <select class="form-control" id="stationlist" onChange='$("#manualstation").val("");' >
                           <option value="http://bbcmedia.ic.llnwd.net/stream/bbcmedia_radio1_mf_p">Radio 1</option>
+                          <option value="http://149.56.185.82:8131">Kiss FM</option>
 			  <option value="http://bbcmedia.ic.llnwd.net/stream/bbcmedia_radio1xtra_mf_p">Radio 1 Xtra</option>
 			  <option value="http://bbcmedia.ic.llnwd.net/stream/bbcmedia_radio2_mf_p">Radio 2</option>
 			  <option value="http://bbcmedia.ic.llnwd.net/stream/bbcmedia_radio3_mf_p">Radio 3</option>
@@ -132,11 +135,19 @@
 <script>
 var volume = 5;
 var mute = 0;
+var beatOff = false;
+
+function heartbeat() {
+  command("api/incvol", "vol", "0");
+  $('#heartbeat1').toggle();
+  $('#heartbeat2').toggle();
+}
 
 $(function ()
 {
   // next line has no effect, just gets the current state
   command("api/incvol", "vol", "0");
+  timer = setInterval(heartbeat, 2000);
 
   $('#slider').slider({ min: 0, max: 20, value: volume, tooltip: 'hide' })
     .on('slide', function(ev)
@@ -168,15 +179,21 @@ $(function ()
     }
     else if (this.id==="dn")
     {
+        beatOff = true;
+        $('#number').focus();
+        $('#dn').prop('disabled', true);
         if (--volume < 0) volume = 0;
         $('#slider').slider('setValue', volume);
-        command("api/setvol", "vol", volume.toString(), "VOL DOWN");
+        command("api/setvol", "vol", volume.toString(), "VOL DOWN", function() { $('#dn').prop('disabled', false); beatOff = false; });
     }
     else if (this.id==="up")
     {
+        beatOff = true;
+        $('#number').focus();
+        $('#up').prop('disabled', true);
         if (++volume > 20) volume = 20;
         $('#slider').slider('setValue', volume);
-        command("api/setvol", "vol", volume.toString(), "VOL UP");
+        command("api/setvol", "vol", volume.toString(), "VOL UP", function() { $('#up').prop('disabled', false); beatOff = false; });
     }
     else if (this.id==="ply")
     {
@@ -212,7 +229,6 @@ function playstation(station, hint)
         if (station === "stop")
         {
           $("#number").val(resp.status == "OK" ? "STOP" : "ERROR");
-          setTimeout(function(){ $("#number").val(""); }, 1000);
         }
         else
         {
@@ -221,7 +237,7 @@ function playstation(station, hint)
     });
 }
 
-function command(path, commandName, val, hint)
+function command(path, commandName, val, hint, after)
 {
     $.ajax({
         url: path,
@@ -229,14 +245,22 @@ function command(path, commandName, val, hint)
         method: "post",
     }).done(function(data)
     {
-        resp = JSON.parse(data)
-        volume = resp.volume;
-        $('#slider').slider('setValue', volume);
+        resp = JSON.parse(data);
+        if (!beatOff) {
+          volume = resp.volume;
+          $('#slider').slider('setValue', volume);
+        }
 
         station = resp.idx-1;
         if (station >= 0) {
           var playing = document.getElementById('stationlist')[station].text;
           $("#number").val(playing);
+        } else {
+          $("#number").val("");
+        }
+
+        if (after) {
+          after();
         }
     });
 }

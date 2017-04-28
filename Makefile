@@ -20,9 +20,11 @@ ht02:
 
 # deploy to HooToo - provide the ip address on the command line, eg: make ip=192.168.1.10 deploy
 deploy:  ht02
-	cp -rf public radio/public
+	rm -rf radio
+	mkdir radio radio/public
+	cp -rf public radio/
 	cp -rf $(TARGET) radio/
-	scp -prC radio root@$(ip):/usr/bin/
+	scp -r radio root@$(ip):/usr/bin/
 
 .PHONY: clean
 

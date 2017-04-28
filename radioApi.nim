@@ -6,7 +6,7 @@
 # upx radioApi --ultra-brute
 
 import asynchttpserver, asyncdispatch, json, tables
-import os, strutils, posix, strtabs
+import os, osproc, strutils, posix, strtabs
 import execpiped, externals
 
 var types  = {
@@ -65,9 +65,8 @@ proc whenValidRequest(req: Request, action: proc(fields: JsonNode): string) {.as
 proc mixervol() =
   if volume > 20: volume = 20
   elif volume < 0: volume = 0
-  if fork() == 0:
-    let cmd = mixer & mixercontrol & $volarray[volume]
-    doAssert(execv(cmd[0], allocCStringArray(cmd)) != -1)
+  let cmd = mixer & mixercontrol & $volarray[volume]
+  discard execCmd(cmd.join(" "))
 
 proc volinc(fields: JsonNode): string =
   var vol = fields.getOrDefault("vol").getStr()
