@@ -11,9 +11,6 @@ proc `->` (stringSequence: seq[string]): cstringArray =
 proc `!` (returnValue: int) =
   doAssert(returnValue != -1)
 
-proc checkExists*(pid: int): bool =
-  return kill(pid, 0) != -1
-
 # call from the parent to prevent zombie processes
 proc reapZombies*() =
   signal(SIGCHLD, SIG_IGN)
