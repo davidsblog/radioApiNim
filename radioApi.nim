@@ -5,7 +5,7 @@
 # NOTE 2: I also pack the resulting binary, to save storage, like this:
 # upx radioApi --ultra-brute
 
-import asynchttpserver, asyncdispatch, json, tables
+import asynchttpserver, asyncdispatch, json, tables, asyncnet
 import os, osproc, strutils, posix, strtabs
 import execpiped, externals
 
@@ -42,6 +42,10 @@ var pids = (0,0)
 var volume = 4
 var idx= "-1"
 
+proc respondAndClose(req: Request, code: HttpCode, content: string, headers: HttpHeaders = nil): Future[void] {.async.} =
+  await req.respond(code, content)
+  req.client.close()
+
 proc whenValidRequest(req: Request, action: proc(fields: JsonNode): string) {.async.} =
   var error: string
   var parsedFormFields: JsonNode
@@ -51,16 +55,16 @@ proc whenValidRequest(req: Request, action: proc(fields: JsonNode): string) {.as
     error = getCurrentExceptionMsg()
 
   if error != nil:
-    await req.respond(Http500, "500 Error: " & error)
+    await req.respondAndClose(Http500, "500 Error: " & error)
     return
 
   if parsedFormFields.len > 0:
     var resp = action(parsedFormFields)
     if idx == nil or idx.len == 0: idx = "-1"
     var json = %* { "status": resp, "volume": $volume, "idx": idx }
-    await req.respond(Http200, $json)
+    await req.respondAndClose(Http200, $json)
   else:
-    await req.respond(Http500, "500 Error: no form values were sent")
+    await req.respondAndClose(Http500, "500 Error: no form values were sent")
 
 proc mixervol() =
   if volume > 20: volume = 20
@@ -88,37 +92,39 @@ proc stream(fields: JsonNode): string =
 
   if url.len > 0 and url != "stop":
     pids = execpiped(wgetCmd & url, madplayCmd)
+
   result = success
 
 proc get(req: Request) {.async.} =
   let path = if $req.url.path == "/": "index.html" else: $req.url.path
   let (dir, name, ext) = path.splitFile()
   if not types.contains(ext):
-    await req.respond(Http403, "403 File extension type not supported")
+    await req.respondAndClose(Http403, "403 File extension type not supported")
   elif path.contains("..") or path.contains("~"):
-    await req.respond(Http403, "403 Parent paths not supported")
+    await req.respondAndClose(Http403, "403 Parent paths not supported")
   else:
     let filepath = getCurrentDir() / "public" / path
     if fileExists(filepath):
       let httpHeaders = newHttpHeaders()
       httpHeaders.add("Content-Type", types[ext])
-      await req.respond(Http200, readFile(filepath), httpHeaders)
+      await req.respondAndClose(Http200, readFile(filepath), httpHeaders)
     else:
-      await req.respond(Http404, "404 Not Found")
+      await req.respondAndClose(Http404, "404 Not Found")
 
 proc post(req: Request) {.async.} =
   case $req.url.path:
     of "/api/incvol": await whenValidRequest(req, volinc)
     of "/api/setvol": await whenValidRequest(req, setvol)
     of "/api/stream": await whenValidRequest(req, stream)
-    else: await req.respond(Http404, "404 Not Found")
+    else: await req.respondAndClose(Http404, "404 Not Found")
 
 proc httpCallback(req: Request) {.async.} =
   case req.reqMethod:
     of HttpGet: await req.get()
     of HttpPost: await req.post()
-    else: await req.respond(Http501, "501 Not Implemented: " & $req.reqMethod)
+    else: await req.respondAndClose(Http501, "501 Not Implemented: " & $req.reqMethod)
 
+reapZombies()
 asyncCheck newAsyncHttpServer().serve(Port(5000), httpCallback)
 mixervol()
 runForever()

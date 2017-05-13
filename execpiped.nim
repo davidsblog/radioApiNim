@@ -11,14 +11,21 @@ proc `->` (stringSequence: seq[string]): cstringArray =
 proc `!` (returnValue: int) =
   doAssert(returnValue != -1)
 
+proc checkExists*(pid: int): bool =
+  return kill(pid, 0) != -1
+
+# call from the parent to prevent zombie processes
+proc reapZombies*() =
+  signal(SIGCHLD, SIG_IGN)
+
 # stop the two programs
 proc killpiped*(pids: (int, int)): (int, int) =
-  if pids[0] > 0:
-    !kill(pids[0], SIGKILL)
-    result[0] = 0
   if pids[1] > 0:
     !kill(pids[1], SIGKILL)
     result[1] = 0
+  if pids[0] > 0:
+    !kill(pids[0], SIGKILL)
+    result[0] = 0
 
 # execute two programs sending the output of one to input of the other
 proc execpiped*(cmdFrom: seq[string], cmdTo: seq[string]): (int, int) =
