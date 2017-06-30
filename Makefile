@@ -1,4 +1,4 @@
-NIMC=nim c -d:release
+NIMC=nim c -d:quick --opt:size
 STRIP=mipsel-openwrt-linux-strip -s
 NFLAGS=--os:linux
 XFLAGS=--cpu:mipsel --os:linux

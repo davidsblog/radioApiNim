@@ -18,10 +18,10 @@ proc reapZombies*() =
 # stop the two programs
 proc killpiped*(pids: (int, int)): (int, int) =
   if pids[1] > 0:
-    !kill(pids[1], SIGKILL)
+    !kill(Pid(pids[1]), SIGKILL)
     result[1] = 0
   if pids[0] > 0:
-    !kill(pids[0], SIGKILL)
+    !kill(Pid(pids[0]), SIGKILL)
     result[0] = 0
 
 # execute two programs sending the output of one to input of the other
@@ -49,13 +49,13 @@ proc execpiped*(cmdFrom: seq[string], cmdTo: seq[string]): (int, int) =
     exitnow(1)
 
   !close(pipefd[0])      # close read end in parent
-  result = (frompid, topid)
+  result = (int(frompid), int(topid))
 
 when isMainModule:
   # non-exported tests
   block:
     const echo = @["/bin/echo", "---\nThe execpiped() procedure seems to work!\n---"]
-    const cat = @["/bin/cat", "-b"]
+    const cat = @["/bin/cat", "-"]
     var pids = execpiped(echo, cat)
     #doAssert(pids[0] > 0 and pids[1] > 0)
     echo "Output from PID *", pids[0], "* piped to PID *", pids[1], "*."

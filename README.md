@@ -3,19 +3,21 @@ A web API and front-end for radio streaming with madplay on Linux. The code is w
 It's a port of the version I wrote [in C some time ago](https://github.com/davidsblog/radioApi) -
 but with some improvements.
 
-# VERY MUCH WORK IN PROGRESS :-)
+# WORK IN PROGRESS :-)
 
-I am using this on OpenWrt and running it on a tiny embedded router (like the HooToo HT-TM02) with a USB sound adapter.
+I am using this on LEDE (embedded linux) and running it on a tiny router (like the HooToo HT-TM02) with a USB sound adapter.
 I simply plug it into a speaker and then control it from my nearest web browser (probably my phone).
 
 ## Building
 At the moment I'm just using a **Makefile** to build the code.
 
 On a local Linux box you can just use `make` to build the executable, although if you don't have nim
-installed you can also do `make docker` instead.
+installed you can also do `make docker` instead (which will use a docker container as a compiler).
 
-To cross-compile for the HooToo HT-TM02 running OpenWrt, you can use `make ht02` ... but *note* this uses a
-large docker image as a cross compile toolchain which means a big download the first time you use it.
+To cross-compile for the HooToo HT-TM02 running LEDE, you can use `make ht02` ... but *note* this uses a
+larger docker image as a cross compiler which means a reasonable download the first time you do it.
+After compilation, it will strip and pack the executable. The executable should come out under 70 Kb
+which is not bad.
 
 ## Running
 When running the code, you must be in a directory *containing* the `/public` subdirectory. I normally have
@@ -39,7 +41,10 @@ the files to `/usr/bin/radio/` on the target device, you just need to give it th
 **NOTE:** this will _not_ start radioApi when the device boots.
 
 ## Dependencies
-Before running on OpenWrt, some packages are needed.
+Before running on LEDE or OpenWrt, some packages are needed.
+
+Do an update first:
+`opkg update`
 
 Add the realtime extensions library:
 `opkg install librt`
@@ -53,4 +58,4 @@ Then, add the Alsa Utils as well:
 Finally, install Madplay:
 `opkg install madplay`
 
-Then, reboot the device.
+Then, reboot the device before proceeding.

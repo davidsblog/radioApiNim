@@ -1,6 +1,6 @@
 # NOTE 1: I am using docker to cross-compile for OpenWrt, eg like this:
-# docker run --rm -v ${PWD}:/src davidsblog/openwrt-build-ht-tm02-nim /bin/sh -c "cd /src;nim c --cpu:mipsel --os:linux -d:uClibc radioApi.nim"
-# (or use a script, eg: ht02nim nim c --cpu:mipsel --os:linux -d:uClibc radioApi.nim)
+# docker run --rm -v ${PWD}:/src davidsblog/lede-17-01-02-ht-tm02-nim /bin/sh -c "cd /src;nim c --cpu:mipsel --os:linux radioApi.nim"
+# (or use a script, eg: lede-tm02-nim nim c --cpu:mipsel --os:linux radioApi.nim)
 
 # NOTE 2: I also pack the resulting binary, to save storage, like this:
 # upx radioApi --ultra-brute
@@ -24,17 +24,18 @@ var types  = {
   ".ico" : "image/x-icon"
 }.newTable()
 
-const wgetCmd = @["/usr/bin/wget", "-q", "-O", "-"]
 const madplayCmd = @["/usr/bin/madplay", "-q", "-"]
 const mixer = @["/usr/bin/amixer", "-q", "sset"]
 const success = "OK"
 
-# different mixer control and volume gradient for these types of CPU
+# some different settings for these types of CPU
 # means I can do something slightly different on the hootoo
 when defined(mips) or defined(mipsel):
+  const wgetCmd = @["/bin/wget", "-q", "-O", "-"]
   const mixercontrol = "PCM"
   const volarray = @[ 0, 4,8,12,16,18, 20,23,26,29,32, 35,40,45,50,55, 60,70,80,90,100 ]
 else:
+  const wgetCmd = @["/usr/bin/wget", "-q", "-O", "-"]
   const mixercontrol = "Master"
   const volarray = @[ 0, 5,10,15,20,25, 30,35,40,45,50, 55,60,65,70,75, 80,85,90,95,100 ]
 
